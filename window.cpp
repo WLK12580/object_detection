@@ -13,7 +13,6 @@ void myDisplay(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(0, -200000000, 200000000, 0, 0, 0, 0, 0, 1);
-
 	// 绘制红色的“太阳”
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glutSolidSphere(69600000, 20, 20);  //绘制一个球体，半径为69600000,水平线数为20，竖直线数为20，即将球体分成400份
