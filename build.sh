@@ -1,2 +1,5 @@
 #bash/bin/
-g++ -o tea_Pot ./first_opengl_teaport.cpp -lGL -lGLU -lglut
+#  gcc window.cpp -lglut -lGL -lGLU -o test
+cmake -B build
+cmake --build build/
+./build/test

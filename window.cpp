@@ -1,154 +1,57 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
- 
-#include <iostream>
- 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
- 
-const char *vertexShaderSource = "#version 330 core\n" 
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n" 
-    "}\0";
-const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
- 
-int main()
+#include <GL/glut.h>
+// 太阳、地球和月亮
+// 假设每个月都是30天
+// 一年12个月，共是360天
+static int day = 200; // day的变化：从0到359
+void myDisplay(void)
 {
-    // glfw: initialize and configure
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
- 
-    // glfw window creation
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
- 
-    // glad: load all OpenGL function pointers
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
- 
- 
-    // build and compile our shader program
-    // ------------------------------------
-    // vertex shader
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL); 
-    glCompileShader(vertexShader);
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // fragment shader
-    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // link shaders
-    int shaderProgram = glCreateProgram(); 
-    glAttachShader(shaderProgram, vertexShader); 
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
- 
- 
-    float vertices[] = {
-        -0.5f, -0.5f, 0.0f, // left  
-         0.5f, -0.5f, 0.0f, // right 
-         0.0f,  0.5f, 0.0f  // top   
-    }; 
- 
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO); 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); 
- 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); 
-    glEnableVertexAttribArray(0);
- 
-	glBindVertexArray(0); 
-    glBindBuffer(GL_ARRAY_BUFFER, 0); 
- 
-    // render loop
-    // -----------
-    while (!glfwWindowShouldClose(window))
-    {
-        // input
-        // -----
-        processInput(window);
- 
-        // render
-        // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
- 
-        // draw our first triangle
-        glUseProgram(shaderProgram); 
-        glBindVertexArray(VAO); 
-        glDrawArrays(GL_TRIANGLES, 0, 3); 
- 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
- 
-    // optional: de-allocate all resources
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
-    glfwTerminate();
+	//glEnable(GL_DEPTH_TEST); //启动深度测试（这样后绘制的图形如果在已经存在的图形的前面，它会被遮住，而不是遮住别人
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //清空颜色和深度缓冲
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(75, 1, 10, 400000000);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0, -200000000, 200000000, 0, 0, 0, 0, 0, 1);
+
+	// 绘制红色的“太阳”
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glutSolidSphere(69600000, 20, 20);  //绘制一个球体，半径为69600000,水平线数为20，竖直线数为20，即将球体分成400份
+	// 绘制蓝色的“地球”
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glRotatef(day / 360.0 * 360.0, 0.0f, 0.0f, -1.0f); //绕z轴旋转的角度
+	glTranslatef(150000000, 0.0f, 0.0f); //沿着x方向平移：150000000
+	glutSolidSphere(15945000, 20, 20);
+	// 绘制黄色的“月亮”
+	glColor3f(1.0f, 1.0f, 0.0f);
+	glRotatef(day / 30.0 * 360.0 - day / 360.0 * 360.0, 0.0f, 0.0f, -1.0f);
+	glTranslatef(38000000, 0.0f, 0.0f);
+	glutSolidSphere(4345000, 20, 20);
+
+	glFlush(); //刷新：数据先放在缓冲区中，刷新后发送给驱动
+	glutSwapBuffers();  //双缓冲区交换指针
+}
+
+void myIdle(void)
+{
+	/* 新的函数，在空闲时调用，作用是把日期往后移动一天并重新绘制，达到动画效果 */
+	++day;
+	if (day >= 360)
+		day = 0;
+	myDisplay();
     
-    return 0;
 }
- 
-void processInput(GLFWwindow *window)
+
+int main(int argc, char* argv[])
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
- 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
+	glutInit(&argc, argv);//对GLUT进行初始化，这个函数必须在其它的GLUT使用之前调用一次
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE); //设置显示方式
+	glutInitWindowPosition(100, 100); //设置窗口位置
+	glutInitWindowSize(400, 400);//窗口大小
+	glutCreateWindow("动画"); //根据前面设置的信息创建窗口。参数将被作为窗口的标题。
+	glutDisplayFunc(&myDisplay); //当需要画图时，请调用myDisplay函数
+	glutIdleFunc(&myIdle);
+    
+	glutMainLoop(); //进行一个消息循环
+	return 0;
 }
